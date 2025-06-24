@@ -1,10 +1,10 @@
 <script setup>
-    import MasterBackend from './Layout/MasterBackend.vue';
-    defineOptions({
-        layout: MasterBackend
-    })
+import MasterBackend from './Layout/MasterBackend.vue';
+defineOptions({
+    layout: MasterBackend
+})
 
-    import { useForm } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 const editCategoryForm = useForm({
     name: null,
     description: null,
@@ -17,12 +17,12 @@ const editCategoryForm = useForm({
 });
 
 import { toast } from 'vue3-toastify';
-
 const submit = () => {
     editCategoryForm.post(route('dash.category.add'), {
         onSuccess: () => {
             editCategoryForm.reset();
-            toast.success('Category added successfully');
+            quill.root.innerHTML = '';
+            toast.success('Product Updated');
         },
         onError: () => {
             if (editCategoryForm.errors.message)
@@ -30,12 +30,41 @@ const submit = () => {
         },
     });
 }
+
+
+//initializing quill editor on mount
+// import { onMounted } from 'vue';
+// import Quill from 'quill';
+// let quill;
+// onMounted(() => {
+//     const editorElement = document.querySelector("#editor");
+//     if (editorElement) {
+//         quill = new Quill(editorElement, {
+//             modules: {
+//                 toolbar: [
+//                     [{ header: [1, 2, false] }],
+//                     [{ font: [] }],
+//                     ["bold", "italic", "underline", "strike"],
+//                     [{ size: ["small", false, "large", "huge"] }],
+//                     [{ list: "ordered" }, { list: "bullet" }],
+//                     [{ color: [] }, { background: [] }, { align: [] }],
+//                     ["link", "image", "code-block", "video"]
+//                 ]
+//             },
+//             theme: "snow"
+//         });
+//     }
+
+//     quill.on('text-change', () => {
+//         editCategoryForm.description = quill.root.innerHTML;
+//     });
+// });
+
+
 function handleFileInput(event) {
     editCategoryForm.preview = URL.createObjectURL(event.target.files[0]);
     editCategoryForm.image = event.target.files[0];
 }
-
-
 </script>
 <template>
     <main class="main-content-wrapper">
@@ -48,21 +77,23 @@ function handleFileInput(event) {
                         <!-- page header -->
                         <div>
                             <h2>Add Category</h2>
-                            <!-- breadcrumb -->
+                            <!-- breacrumb -->
                             <nav aria-label="breadcrumb">
                                 <ol class="mb-0 breadcrumb">
                                     <li class="breadcrumb-item">
-                                        <a href="#" class="text-inherit">Dashboard</a>
+                                        <Link :href="route('dashboard')" class="text-inherit">Dashboard</Link>
                                     </li>
                                     <li class="breadcrumb-item">
-                                        <a href="#" class="text-inherit">Categories</a>
+                                        <Link :href="route('dash.categories')" class="text-inherit">Categories</Link>
                                     </li>
-                                    <li class="breadcrumb-item active" aria-current="page">Add Category</li>
+                                    <li class="breadcrumb-item active" aria-current="page">Add Category
+                                    </li>
                                 </ol>
                             </nav>
                         </div>
                         <div>
-                            <a href="#" class="btn btn-light">Back to Categories</a>
+                            <Link :href="route('dash.categories')" class="btn btn-light">Back to
+                            Categories</Link>
                         </div>
                     </div>
                 </div>
@@ -72,35 +103,41 @@ function handleFileInput(event) {
                     <!-- card -->
                     <div class="mb-6 border-0 shadow card">
                         <!-- card body -->
-                        <form class="p-6 card-body" id="form">
+                        <form @submit.prevent="submit" class="p-6 card-body" id="form">
                             <h4 class="mb-5 h5">Category Image</h4>
                             <div class="mb-4 d-flex">
                                 <div class="position-relative">
-                                    <img class="image icon-shape icon-xxxl bg-light rounded-4" src="#" alt="Image" />
+                                    <img class="image icon-shape icon-xxxl bg-light rounded-4"
+                                        :src="editCategoryForm.preview" alt="Image" />
                                     <div class="top-0 file-upload position-absolute end-0 mt-n2 me-n1">
-                                        <input type="file" accept="image/*" name="image" class="file-input" />
+                                        <input @input="handleFileInput" type="file" accept="image/*" name="image"
+                                            class="file-input" />
                                         <span class="bg-white icon-shape icon-sm rounded-circle">
                                             <i class="fas fa-pencil-alt text-muted" style="font-size: 12px;"></i>
                                         </span>
                                     </div>
-                                    <div class="text-danger"></div>
+                                    <div class="text-danger">{{ editCategoryForm.errors.image }}</div>
                                 </div>
                             </div>
                             <h4 class="mt-5 mb-4 h5">Category Information</h4>
+
                             <div class="row">
                                 <!-- input -->
                                 <div class="mb-3 col-lg-6">
                                     <label class="form-label">Category Name</label>
-                                    <input type="text" class="form-control" name="name" placeholder="Category Name" />
-                                    <div class="text-danger"></div>
+                                    <input type="text" class="form-control" name="name" placeholder="Category Name"
+                                        v-model="editCategoryForm.name" required />
+                                    <div class="text-danger">{{ editCategoryForm.errors.name }}</div>
                                 </div>
                                 <!-- input -->
                                 <div class="mb-3 col-lg-6">
                                     <label class="form-label">Slug</label>
-                                    <input type="text" class="form-control" name="slug" placeholder="Slug" />
-                                    <div class="text-danger"></div>
+                                    <input type="text" class="form-control" name="slug" placeholder="Slug"
+                                        id="attachment" v-model="editCategoryForm.slug" required />
+                                    <div class="text-danger">{{ editCategoryForm.errors.slug }}</div>
                                 </div>
-                                <!-- button -->
+                                <!-- input -->
+
                                 <div class="col-lg-12">
                                     <button type="submit" class="btn main-theme">Create Category</button>
                                 </div>
